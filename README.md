@@ -1,4 +1,4 @@
-# Remote Access App
+# Remote Access App via React Native App and python Backend
 
 This is a small self-built tool that lets me remotely check the status of my PC and shut it down via a React Native app. Just to learn more about APIs, JWT authentication, and backend/frontend interaction and python.
 The project combines a Python backend with a React Native frontend and exposes everything securely via a Cloudflare tunnel. I wanted to explore how to scan QR codes to log in, how to protect endpoints with tokens, and how to avoid CORS issues by using a simple proxy.
