@@ -1,0 +1,5 @@
+Add remote access app implementation with Python backend, Node proxy, and React Native frontend
+- Python FastAPI backend with JWT authentication and system control endpoints
+- Node.js proxy server to handle CORS and forward frontend requests
+- React Native mobile app for monitoring and remote shutdown via QR code login
+- Cloudflare tunnel integration for secure external access
