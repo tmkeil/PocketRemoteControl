@@ -91,7 +91,7 @@ While it solves a specific small task (remote shutdown and machine resources req
 4. Use the **Shutdown Tab** to turn off the connected machine
 
 > [!NOTE]
-> Small caveat: The proxy server in `node-server/index.js` (used to avoid CORS issues) currently forwards to a hardcoded local backend address (`http://192.168.2.30:3000`).  
+> Small caveat: The proxy server in `node-server/index.js` (used to avoid CORS issues) currently forwards to a hardcoded local backend address (`http://192.168.2.30:3000`).
 > I didn’t bother with full config parsing for this small tool.
 
 
