@@ -1,140 +1,119 @@
-# PocketRemoteAccess
+# Remote Access App
 
-Monitor system resources like CPU, RAM, and disk usage – and remotely trigger actions like shutdown – directly from your phone. All communication is securely tunneled via Cloudflare.
-
-Authentication is handled either through the free Cloudflare Zero Trust plan or via a custom JWT token system.
+A lightweight and secure application enabling remote machine monitoring and shutdown via a React Native mobile app, a Python backend, and a Cloudflare tunnel. This setup is perfect for users who want to control and inspect local machines from anywhere without exposing their system to the open internet.
 
 ---
 
-## ✨ Features
+## 🚀 Features
 
-* ✅ Cross-platform (Windows, Linux, macOS)
-* ✅ Quick setup via script
-* ✅ Secure remote access without any port forwarding
-* ✅ Optional authentication: self-managed JWT or Cloudflare Zero Trust
-* ✅ Modern API communication via HTTPS and JSON (FastAPI)
+### 🔒 Secure Remote Control
 
----
+* **JWT Token Authentication**: Only clients with a valid JSON Web Token (JWT) can access protected endpoints.
+* **Cloudflare Tunnel Integration**: Easily expose localhost to the internet through a secure tunnel.
 
-## ⚙️ Core Idea
+### ⚙️ Backend Services
 
-A Python backend (FastAPI on port 8123) runs on your PC and is made publicly accessible via a secure Cloudflare Tunnel. This backend provides:
+* **Quick Tunnel Startup**: Automatically starts a local server at `http://localhost:8000` and exposes it via `cloudflared`.
+* **System Monitoring**: Query current machine resource usage (CPU, memory, etc.).
+* **Shutdown Command**: Remotely shut down the machine with a single button.
 
-* System information (CPU, RAM, disk usage)
-* Control actions (shutdown, restart)
+### 📱 React Native Mobile App
 
-The connection from the React Native app on the smartphone to the backend uses the public HTTPS URL provided by Cloudflare Tunnel.
-The connection is secured via HTTPS and either self-managed JWT token-based authentication or Cloudflare Zero Trust.
-
----
-
-## 🚀 Setup Steps for Users (Testing)
-
-1. Create a Cloudflare account: [https://dash.cloudflare.com](https://dash.cloudflare.com)
-2. Install `cloudflared` on your PC: [https://developers.cloudflare.com/cloudflared](https://developers.cloudflare.com/cloudflared)
-3. Set up Zero Trust access (if used without own JWT authentication solution)
-4. Run the `setup.py` script, that generates JWT token (if chosen) and starts tunnel or prints out domain/IP
-5. Install the React Native app on your phone
-6. Enter the domain (from tunnel) and token in the app to authenticate
+* **API Login**: Scan QR codes for API URL and JWT token to connect securely.
+* **Home Tab**: Display live system resource data.
+* **Shutdown Tab**: One-tap remote shutdown.
 
 ---
 
-## 📁 File Structure on the PC
+## 💡 Use Case
+
+This app is ideal for:
+
+* IT administrators needing remote access to machines behind firewalls.
+* Developers and power users wanting secure remote control without setting up complex VPNs.
+* Anyone needing to access system stats or perform emergency shutdowns remotely.
+
+---
+
+## ⚙️ Tech Stack
+
+### 🔧 Backend
+
+* **Python 3** – REST API with endpoint handling and JSON Web Token authentication
+* **FastAPI** – Provides REST endpoints: `GET /status`, `POST /shutdown`, `GET /qr`
+* **Bash Scripting** – Automates environment setup and cloudflared tunnel management
+* **cloudflared** – Establishes a secure tunnel to `localhost:8000`
+
+### 📱 Frontend
+
+* **React Native** – Cross-platform mobile app interface
+* **Expo Go** – Quick deployment and testing on Android/iOS devices
+* **Node.js Proxy Server** – Handles CORS by forwarding frontend requests to the backend
+
+---
+
+## 🧩 Setup Process
+
+### Step 1: Backend Setup
+
+1. **Run `install_cloudflared.sh`**
+
+   * Creates a Python virtual environment
+   * Installs requirements
+   * Installs `cloudflared`
+   * Starts a Cloudflare tunnel to `http://localhost:8000`
+   * Extracts the tunnel URL
+   * Generates QR codes:
+
+     * For the URL via `generate_qr_code.py`
+     * For the JWT via `setup.py`
+   * Starts the backend: `backend/main.py`
+   * Starts a Node.js server to forward frontend requests and avoid CORS issues
+
+### Step 2: React Native App
+
+1. Start the app on a physical device using **Expo Go**
+2. On the **Login Screen**:
+
+   * Enter (or scan) the **Cloudflare URL** and **JWT Token**
+   * Press **Login** to authenticate
+3. Access the **Home Tab** to monitor resources
+4. Use the **Shutdown Tab** to turn off the connected machine
+
+---
+
+## 🖼️ Screenshots
+
+| Screenshot              | Description                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| ![1](screenshots/1.jpg) | **Login Screen** – Enter or scan the API URL and JWT token to log in.              |
+| ![2](screenshots/2.jpg) | **Home Tab** – Displays system resource usage like CPU and memory stats.           |
+| ![3](screenshots/3.jpg) | **Shutdown Tab** – Allows secure shutdown of the connected PC with a button press. |
+
+---
+
+## 📂 Project Structure
 
 ```
-pc_monitoring_app/
-|
-|│-- backend/                   # FastAPI app & Python scripts
-|   |
-|   |│-- main.py             # FastAPI server (GET/POST endpoints)
-|   |│-- auth.py             # Token generation & auth logic
-|   |│-- system_info.py      # Uses psutil to fetch system info
-|   |│-- shutdown.py         # Cross-platform shutdown commands
-|   |│-- requirements.txt    # Python dependencies
-|
-|│-- setup.py                # Setup script (token generation, tunnel)
-|│-- README.md               # Instructions for users
-|│-- config.yaml             # Config file (token, domain)
+RemoteAccessApp/
+├── backend/
+│   ├── main.py             # FastAPI backend providing REST endpoints
+│   ├── auth.py             # JWT token generation and validation
+│   └── utils.py            # System status and shutdown helpers
+├── frontend/
+│   └── App.js              # React Native mobile app code
+├── node-server/
+│   └── index.js            # CORS proxy between frontend and backend
+├── scripts/
+│   ├── install_cloudflared.sh  # Installs dependencies, starts tunnel and backend
+│   ├── generate_qr_code.py     # QR code for Cloudflare URL
+│   └── setup.py                # Generates JWT and QR code
+├── requirements.txt        # Python dependencies
+└── README.md               # Project overview
 ```
 
 ---
 
-## ⚖️ Technical Components
+## 🧑‍💻 Author
 
-### `setup.py`
-
-* Generates JWT token (if custom auth is used)
-* Optionally starts a cloudflared tunnel
-* Displays domain or local IP
-* Writes settings to `config.yaml`
-
-### `backend/main.py`
-
-* Starts FastAPI server on port 8123
-* Provides endpoints:
-
-  * `/status` → JSON with system stats
-  * `/shutdown` → shutdown command
-
-### `backend/auth.py`
-
-* Contains `validate_token()` which checks the token via:
-
-```
-jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-```
-
-### `backend/system_info.py`
-
-* Uses `psutil` to fetch:
-
-  * RAM, CPU, Disk
-
-### `backend/shutdown.py`
-
-* Platform-aware shutdown and restart commands
-
-### `config.yaml`
-
-* Stores: JWT token, domain from tunnel, server port
-
-### `requirements.txt`
-
-* `fastapi`, `uvicorn`, `pyjwt`, `psutil`, `pyyaml`, `python`
-
----
-
-## 🔐 How Authentication Works
-
-### With custom JWT tokens:
-
-* The app sends an `Authorization` header with every request:
-
-```
-Authorization: Bearer <JWT-TOKEN>
-```
-
-* Server verifies the token:
-
-```python
-jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-```
-
-* If invalid or expired → returns 401 Unauthorized
-
-### With Cloudflare Zero Trust:
-
-* Cloudflare handles authentication
-* Only after a successful login does Cloudflare forward requests
-* No token logic required in the backend
-
----
-
-## ❓ Why use Cloudflare Tunnel instead of port forwarding?
-
-* No need to access your router or use DynDNS
-* No public IPs or open ports
-* HTTPS support out of the box (Let's Encrypt)
-* Protection against port scans and bots
-
----
+Built with ❤️ to provide simple and secure remote machine access, developed as a learning and utility project for remote IT control.
