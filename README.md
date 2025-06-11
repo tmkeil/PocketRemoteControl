@@ -1,6 +1,9 @@
 # Remote Access App
 
-A lightweight and secure application enabling remote machine monitoring and shutdown via a React Native mobile app, a Python backend, and a Cloudflare tunnel. This setup is perfect for users who want to control and inspect local machines from anywhere without exposing their system to the open internet.
+This is a small self-built tool that lets me remotely check the status of my PC and shut it down via a React Native app. Just to learn more about APIs, JWT authentication, and backend/frontend interaction and python.
+The project combines a Python backend with a React Native frontend and exposes everything securely via a Cloudflare tunnel. I wanted to explore how to scan QR codes to log in, how to protect endpoints with tokens, and how to avoid CORS issues by using a simple proxy.
+It’s not meant to be production-grade - more like a personal sandbox to understand how all these pieces fit together.
+
 
 ---
 
@@ -27,11 +30,18 @@ A lightweight and secure application enabling remote machine monitoring and shut
 
 ## 💡 Use Case
 
-This app is ideal for:
+This project was built as a personal project to deepen the understanding of frontend-backend communication, token-based authentication, and remote access APIs.
 
-* IT administrators needing remote access to machines behind firewalls.
-* Developers and power users wanting secure remote control without setting up complex VPNs.
-* Anyone needing to access system stats or perform emergency shutdowns remotely.
+The main idea: I wanted to remotely shut down my home PC from my phone - securely and with a bit of style. I used this opportunity to gain hands-on experience with:
+
+- JSON Web Tokens (JWT)
+- Dynamic backend tunnels using Cloudflare
+- QR code-based login workflows
+- React Native communication via a proxy Node server
+- Python coding
+
+While it solves a specific small task (remote shutdown and machine resources requests), the real value for me lies in the architecture and technologies used to make it work.
+
 
 ---
 
@@ -80,7 +90,20 @@ This app is ideal for:
 3. Access the **Home Tab** to monitor resources
 4. Use the **Shutdown Tab** to turn off the connected machine
 
+> [!NOTE] Small caveat: The proxy server in `node-server/index.js` (used to avoid CORS issues) currently forwards to a hardcoded local backend address (`http://192.168.2.30:3000`).  
+> I didn’t bother with full config parsing for this small tool.
+
+
 ---
+
+## 🔧 Future Ideas
+
+- **Access from Anywhere**:  
+  Since the backend is already exposed via a secure Cloudflare tunnel, it’d be good to tweak the proxy so the app works even when I’m not at home.
+
+
+---
+
 
 ## 🖼️ Screenshots
 
@@ -97,9 +120,9 @@ This app is ideal for:
 ```
 RemoteAccessApp/
 ├── backend/
-│   ├── main.py             # FastAPI backend providing REST endpoints
-│   ├── auth.py             # JWT token generation and validation
-│   └── utils.py            # System status and shutdown helpers
+│   ├── main.py                                   # FastAPI backend providing REST endpoints
+│   ├── auth.py                                   # JWT token generation and validation
+│   └── shutdown.py and system_info.py            # System status and shutdown helpers
 ├── frontend/
 │   └── App.js              # React Native mobile app code
 ├── node-server/
