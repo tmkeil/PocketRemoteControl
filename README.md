@@ -112,9 +112,9 @@ While it solves a specific small task (remote shutdown and machine resources req
 
 | Screenshot              | Description                                                                        |
 | ----------------------- | ---------------------------------------------------------------------------------- |
-| ![1](screenshots/1.jpg) | **Login Screen** – Enter or scan the API URL and JWT token to log in.              |
-| ![2](screenshots/2.jpg) | **Home Tab** – Displays system resource usage like CPU and memory stats.           |
-| ![3](screenshots/3.jpg) | **Shutdown Tab** – Allows secure shutdown of the connected PC with a button press. |
+| ![1](screenshots/1.JPG) | **Login Screen** – Enter or scan the API URL and JWT token to log in.              |
+| ![2](screenshots/2.JPG) | **Home Tab** – Displays system resource usage like CPU and memory stats.           |
+| ![3](screenshots/3.JPG) | **Shutdown Tab** – Allows secure shutdown of the connected PC with a button press. |
 
 ---
 
