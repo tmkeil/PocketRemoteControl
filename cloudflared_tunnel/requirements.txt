@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pyjwt
+psutil
+pyyaml
+requests
+qrcode[pil]
