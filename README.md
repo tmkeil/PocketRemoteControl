@@ -1,146 +1,58 @@
-# Remote Access App via React Native and python Backend
+<div align="center">
+  <h1>PocketRemote</h1>
+</div>
 
-This small tool lets me remotely check my PC’s status and shut it down via a React Native app. It combines a Python backend and React Native frontend, securely exposed through a Cloudflare tunnel. I built it to explore APIs, JWT authentication, QR code login, and handling CORS with a proxy.
+## About
+A mobile app for remotely monitoring and shutting down my PC. React Native frontend communicates with a Python/FastAPI backend, securely exposed over the internet through a Cloudflare tunnel. Authentication is handled via JWT tokens, delivered to the phone by scanning QR codes from the PC screen.
 
-I had this idea years ago and finally made it real to deepen my understanding of backend/frontend interaction and secure remote access.
+This is a personal project — I had the idea years ago and built it to get hands-on experience with token-based auth, tunneling, and mobile-to-backend communication.
 
-> [!NOTE]
-> It’s not meant to be production-grade.
+## Architecture
+The phone app talks to a Node.js CORS proxy on the local network, which forwards requests (with the JWT) through a Cloudflare Quick Tunnel to the FastAPI backend running on the PC. The tunnel assigns a random `*.trycloudflare.com` subdomain on each start — that's why the QR-code login flow exists: the URL changes every time.
 
+### Backend (Python/FastAPI)
+- `POST /shutdown` — detects the OS and runs the appropriate shutdown command
+- `GET /status` — returns CPU, RAM, disk usage, uptime, hostname, and IP via `psutil`
+- `GET /validate` — verifies the JWT token
+- `GET /qr` — serves the generated QR code images
 
----
+Every endpoint (except QR delivery) requires a valid `Bearer` token. The JWT is generated at startup by `setup.py` with a 30-day expiry, signed with HS256.
 
-## 🚀 Features
+### Frontend (React Native / Expo)
+- **Login screen** — scan two QR codes (tunnel URL + JWT) or enter them manually
+- **Home tab** — displays live system metrics from `/status`
+- **Shutdown tab** — one-tap shutdown button
 
-### 🔒 Secure Remote Control
+Auth state is managed via React Context. Protected routes redirect to login if unauthenticated.
 
-* **JWT Token Authentication**: Only clients with a valid JSON Web Token (JWT) can access protected endpoints.
-* **Cloudflare Tunnel Integration**: Easily expose localhost to the internet through a secure tunnel.
+### CORS Proxy (Node.js/Express)
+A minimal Express server sits between the phone and the tunnel to handle CORS headers — Expo's dev environment can't call the tunnel directly. Forwards the `Authorization` header transparently.
 
-### ⚙️ Backend Services
+## Tech Stack
+- **Frontend:** React Native, Expo SDK 53, TypeScript, NativeWind, expo-camera (QR scanning)
+- **Backend:** Python 3, FastAPI, PyJWT, psutil
+- **Proxy:** Node.js, Express
+- **Infra:** Cloudflare Quick Tunnels (cloudflared), Bash scripting for automated setup
 
-* **Quick Tunnel Startup**: Automatically starts a local server at `http://localhost:8000` and exposes it via `cloudflared`.
-* **System Monitoring**: Query current machine resource usage (CPU, memory, etc.).
-* **Shutdown Command**: Remotely shut down the machine with a single button.
-
-### 📱 React Native Mobile App
-
-* **API Login**: Scan QR codes for API URL and JWT token to connect securely.
-* **Home Tab**: Display live system resource data.
-* **Shutdown Tab**: One-tap remote shutdown.
-
----
-
-## 💡 Use Case
-
-This project was built as a personal project to deepen the understanding of frontend-backend communication, token-based authentication, and remote access APIs.
-
-The main idea: I wanted to remotely shut down my home PC from my phone - securely and with a bit of style. I used this opportunity to gain hands-on experience with:
-
-- JSON Web Tokens (JWT)
-- Dynamic backend tunnels using Cloudflare
-- QR code-based login workflows
-- React Native communication via a proxy Node server
-- Python coding
-
-While it solves a specific small task (remote shutdown and machine resources requests), the real value for me lies in the architecture and technologies used to make it work.
-
-
----
-
-## ⚙️ Tech Stack
-
-### 🔧 Backend
-
-* **Python 3** – REST API with endpoint handling and JSON Web Token authentication
-* **FastAPI** – Provides REST endpoints: `GET /status`, `POST /shutdown`, `GET /qr`
-* **Bash Scripting** – Automates environment setup and cloudflared tunnel management
-* **cloudflared** – Establishes a secure tunnel to `localhost:8000`
-
-### 📱 Frontend
-
-* **React Native** – Cross-platform mobile app interface
-* **Expo Go** – Quick deployment and testing on Android/iOS devices
-* **Node.js Proxy Server** – Handles CORS by forwarding frontend requests to the backend
-
----
-
-## 🧩 Setup Process
-
-### Step 1: Backend Setup
-
-1. **Run `install_cloudflared.sh`**
-
-   * Creates a Python virtual environment
-   * Installs requirements
-   * Installs `cloudflared`
-   * Starts a Cloudflare tunnel to `http://localhost:8000`
-   * Extracts the tunnel URL
-   * Generates QR codes:
-
-     * For the URL via `generate_qr_code.py`
-     * For the JWT via `setup.py`
-   * Starts the backend: `backend/main.py`
-   * Starts a Node.js server to forward frontend requests and avoid CORS issues
-
-### Step 2: React Native App
-
-1. Start the app on a physical device using **Expo Go**
-2. On the **Login Screen**:
-
-   * Enter (or scan) the **Cloudflare URL** and **JWT Token**
-   * Press **Login** to authenticate
-3. Access the **Home Tab** to monitor resources
-4. Use the **Shutdown Tab** to turn off the connected machine
-
-> [!NOTE]
-> Small caveat: The proxy server in `node-server/index.js` (used to avoid CORS issues) currently forwards to a hardcoded local backend address (`http://192.168.2.30:3000`).
-> I didn’t bother with full config parsing for this small tool.
-
-
----
-
-## 🔧 Future Ideas
-
-- **Access from Anywhere**:  
-  Since the backend is already exposed via a secure Cloudflare tunnel, it’d be good to tweak the proxy so the app works even when I’m not at home.
-
-
----
-
-
-## 🖼️ Screenshots
-
-| Screenshot              | Description                                                                        |
-| ----------------------- | ---------------------------------------------------------------------------------- |
-| ![1](screenshots/1.JPG) | **Login Screen** – Enter or scan the API URL and JWT token to log in.              |
-| ![2](screenshots/2.JPG) | **Home Tab** – Displays system resource usage like CPU and memory stats.           |
-| ![3](screenshots/3.JPG) | **Shutdown Tab** – Allows secure shutdown of the connected PC with a button press. |
-
----
-
-## 📂 Project Structure
-
+## Usage
+Start the backend (creates venv, installs deps, starts tunnel, generates QR codes, launches everything):
 ```
-RemoteAccessApp/
-├── backend/
-│   ├── main.py                                   # FastAPI backend providing REST endpoints
-│   ├── auth.py                                   # JWT token generation and validation
-│   └── shutdown.py and system_info.py            # System status and shutdown helpers
-├── frontend/
-│   └── App.js              # React Native mobile app code
-├── node-server/
-│   └── index.js            # CORS proxy between frontend and backend
-├── scripts/
-│   ├── install_cloudflared.sh  # Installs dependencies, starts tunnel and backend
-│   ├── generate_qr_code.py     # QR code for Cloudflare URL
-│   └── setup.py                # Generates JWT and QR code
-├── requirements.txt        # Python dependencies
-└── README.md               # Project overview
+cd cloudflared_tunnel
+./install_cloudflared.sh
 ```
 
----
+Start the mobile app:
+```
+cd mobile-app
+npx expo start
+```
 
-## 🧑‍💻 Author
+Scan the two QR codes on the login screen, and you're connected.
 
-Built with ❤️ to provide simple and secure remote machine access, developed as a learning and utility project for remote IT control.
+## Screenshots
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Login](screenshots/1.JPG) | Login screen — scan or enter API URL and JWT |
+| ![Home](screenshots/2.JPG) | System resource monitoring |
+| ![Shutdown](screenshots/3.JPG) | Remote shutdown button |
