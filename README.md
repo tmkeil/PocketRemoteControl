@@ -34,6 +34,12 @@ A minimal Express server sits between the phone and the tunnel to handle CORS he
 - **Proxy:** Node.js, Express
 - **Infra:** Cloudflare Quick Tunnels (cloudflared), Bash scripting for automated setup
 
+## Requirements
+- Linux or macOS (cloudflared tunnel setup requires Bash)
+- Python 3, Node.js
+- [Expo Go](https://expo.dev/go) on your phone
+- Phone and PC on the same network (development only — the CORS proxy runs locally)
+
 ## Usage
 Start the backend (creates venv, installs deps, starts tunnel, generates QR codes, launches everything):
 ```
